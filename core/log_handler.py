@@ -9,10 +9,10 @@ def configure_logging():
     logging.getLogger('boto').setLevel(logging.CRITICAL)
     logging.getLogger("paramiko").setLevel(logging.CRITICAL)
         
-    # define a Handler which writes INFO messages or higher to the sys.stderr
     console = ColorLog()
     console.setLevel(logging.DEBUG)
     logging.getLogger('').addHandler(console)
+    logging.getLogger('').setLevel(logging.DEBUG)
 
 
 class ColorLog(logging.Handler):

@@ -1,7 +1,7 @@
 import time
 import logging
 
-from boto.ec2 import EC2Connection
+from core.region_connection import EC2Connection
 
 
 def terminate_instance(inst):

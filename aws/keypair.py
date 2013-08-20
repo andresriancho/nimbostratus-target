@@ -1,7 +1,8 @@
+import os
 import logging
 import time
 
-from boto.ec2 import EC2Connection
+from core.region_connection import EC2Connection
 
 
 def create_keypair(key_name):
@@ -17,6 +18,7 @@ def create_keypair(key_name):
         
         # AWS will store the public key but the private key is
         # generated and returned and needs to be stored locally.
+        os.unlink('%s.pem' % key_name)
         key.save('.')
         
         for _ in xrange(20):

@@ -4,7 +4,7 @@ import os
 import time
 import logging
 
-from boto.ec2.connection import EC2Connection
+from core.region_connection import EC2Connection
 
 from config import AMI, SIZE, DEPLOY_PRIVATE_PATH, DEPLOY_PUBLIC_PATH
 from aws.keypair import create_keypair
@@ -19,7 +19,7 @@ def deploy_django_frontend():
 
     logging.info('Launching Django frontend instance')
     
-    keypair_name = create_keypair('django_frontend')
+    keypair_name = create_keypair(NAME)
     user_data = get_user_data()
     security_group = create_security_group()
     
