@@ -8,14 +8,20 @@ can be exploited using [nimbostratus](https://github.com/andresriancho/nimbostra
 
 **If you're not sure what this is all about, you better avoid using any of the code that lives here.**
 
-Usage
-=====
+Installation
+============
 
 ```bash
 git clone git@github.com:andresriancho/nimbostratus-target.git
 cd nimbostratus-target
 pip install -r requirements.txt
 ```
+
+Usage
+=====
+
+Starting the environment
+------------------------
 
 Make sure you have configured your "root" AWS credentials in `~/.boto` before you run the fabric script.
 
@@ -40,6 +46,9 @@ At the end you should end up with the following AWS components:
    * Stores information in RDS database using low-privileged user
  * RDS database
  * IAM user for backend worker
+
+Killing the environment
+-----------------------
 
 Once you finish playing with this Amazon cloud, just delete it with:
 
