@@ -41,8 +41,16 @@ At the end you should end up with the following AWS components:
  * RDS database
  * IAM user for backend worker
 
+Once you finish playing with this Amazon cloud, just delete it with:
+
+```bash
+fab teardown
+```
+
+
 Disclaimer
 ==========
 
  * This code wasn't developed for re-usability.
  * Running this code will create Amazon AWS charges!
+ * The `teardown` command might fail, charges might be applied by Amazon even after running it. You're responsible of checking the state of your services after running this tool.
