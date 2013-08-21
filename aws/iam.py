@@ -33,6 +33,8 @@ def spawn_iam_user():
     '''
     Create an IAM user and return the API key and secret.
     '''
+    teardown_iam_user()
+    
     conn = IAMConnection()
     conn.create_user(IAM_USER)
     credentials = conn.create_access_key(user_name=IAM_USER)
@@ -52,4 +54,15 @@ def teardown_iam_user():
     '''
     Remove the IAM user
     '''
-    raise NotImplementedError
+    conn = IAMConnection()
+    conn.remove_user_from_group(IAM_GROUP, IAM_USER)
+    
+    access_keys_response = conn.get_all_access_keys(IAM_USER)
+    access_keys = access_keys_response['list_access_keys_response']['list_access_keys_result']['access_key_metadata']
+    
+    for access_key in access_keys:
+        conn.delete_access_key(access_key['access_key_id'], user_name=IAM_USER)
+        
+    conn.delete_user(IAM_USER)
+    conn.delete_group_policy(IAM_GROUP, 'LowPrivsPolicy')
+    conn.delete_group(IAM_GROUP)
