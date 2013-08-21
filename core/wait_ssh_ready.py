@@ -9,7 +9,7 @@ import logging
 def wait_ssh_ready(host, tries=40, delay=3, port=22):
     # Wait until the SSH is actually up
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    logging.info('Waiting for SSH at %s to be ready to connect' % host, end='')
+    print('Waiting for SSH at %s to be ready to connect' % host, end='')
     sys.stdout.flush()
     
     for _ in xrange(tries):
