@@ -15,12 +15,12 @@ from core.log_handler import configure_logging
 def deploy():
     configure_logging()
     verify_config()
-    deploy_django_frontend()
+    #deploy_django_frontend()
     
-    spawn_rds()
-    spawn_iam_user()
+    rds_inst = spawn_rds()
+    user_key, user_secret = spawn_iam_user()
     
-    deploy_celery_backend()
+    deploy_celery_backend(rds_inst.endpoint[0], user_key, user_secret)
 
 @task
 def teardown():

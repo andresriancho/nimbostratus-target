@@ -1,12 +1,12 @@
 import time
 import logging
 
-from fabric.api import settings, sudo, cd, env, task
-from fabric.contrib.files import upload_template
+from fabric.api import settings, sudo, cd, task
+from fabric.contrib.files import upload_template, put
 
 from core.region_connection import EC2Connection
 from core.wait_ssh_ready import wait_ssh_ready
-from config import AMI, SIZE
+from config import AMI, SIZE, DEPLOY_PRIVATE_PATH, DEPLOY_PUBLIC_PATH
 from servers.django_frontend.user_data import VULNWEB_REPO, VULNWEB_BRANCH
 from aws.keypair import create_keypair
 from aws.rds import LOW_PRIV_PASSWORD, LOW_PRIV_USER
@@ -19,10 +19,6 @@ SUCCESS_MESSAGE = '''\
 You can connect to it via SSH:
     ssh -i celery_backend_nimbostratus.pem ubuntu@%s
 '''
-
-
-# We want to deploy using our local SSH keys
-env.forward_agent = True
 
 
 @task
@@ -43,9 +39,9 @@ def deploy_celery_backend(rds_host, user_key, user_secret):
 
     logging.info('Launching Celery backend instance')
     
-    logging.debug('RDS host: %s' % rds_host)
-    logging.debug('Low privilege user access key: %s' % user_key)
-    logging.debug('Low privilege user secret key: %s' % user_secret)
+    logging.debug('    RDS host: %s' % rds_host)
+    logging.debug('    Low privilege user access key: %s' % user_key)
+    logging.debug('    Low privilege user secret key: %s' % user_secret)
     
     keypair_name = create_keypair(NAME)
     security_group = create_security_group()
@@ -76,12 +72,25 @@ def setup_celery_backend(rds_host, user_key, user_secret):
     '''
     The real configuration happens here.
     '''
+    sudo('apt-get update')
+    
+    # Not sure why, but sometimes I get "E: Unable to locate package git"
+    # trying to solve this with a sleep.
+    time.sleep(2)
+    sudo('apt-get update')
+    
     for pkg in ['git', 'python-pip', 'joe', 'python-mysqldb', 'supervisor']:
         sudo('apt-get install -y -q %s' % pkg)
     
     with cd('/tmp/'):
-        # Since we use env.forward_agent = True, our local SSH keys should be
-        # used to clone this repository
+        sudo('ssh-keyscan -H github.com > /root/.ssh/known_hosts')
+        
+        put(DEPLOY_PRIVATE_PATH, '/root/.ssh/id_rsa', use_sudo=True)
+        put(DEPLOY_PUBLIC_PATH, '/root/.ssh/id_rsa.pub', use_sudo=True)
+    
+        sudo('chmod 600 /root/.ssh/id_rsa')
+        sudo('chmod 600 /root/.ssh/id_rsa.pub')
+        
         sudo('git clone %s' % VULNWEB_REPO)
         
     with cd('/tmp/nimbostratus-target/'):

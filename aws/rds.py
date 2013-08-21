@@ -46,9 +46,13 @@ def spawn_rds():
         time.sleep(45)
         logging.debug('Waiting...')
         
-        
+    # Remove if exists, else continue
+    try:
+        conn.delete_dbsecurity_group(SG_NAME)
+    except:
+        pass
+    
     # Very insecure, everyone can connect to this MySQL instance
-    conn.delete_dbsecurity_group(SG_NAME)
     sg = conn.create_dbsecurity_group(SG_NAME, 'All hosts can connect')
     sg.authorize(cidr_ip='0.0.0.0/0')
     db.modify(security_groups=[sg])
@@ -135,5 +139,8 @@ def teardown_rds():
             time.sleep(30)
             logging.debug('Waiting...') 
     
-    conn.delete_dbsecurity_group(SG_NAME)
+    try:
+        conn.delete_dbsecurity_group(SG_NAME)
+    except:
+        logging.debug('No DB security group %s to delete' % SG_NAME)
     

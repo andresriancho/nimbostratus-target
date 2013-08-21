@@ -1,3 +1,4 @@
+import logging
 from core.region_connection import IAMConnection
 
 IAM_USER = 'low_privileged_user'
@@ -55,14 +56,17 @@ def teardown_iam_user():
     Remove the IAM user
     '''
     conn = IAMConnection()
-    conn.remove_user_from_group(IAM_GROUP, IAM_USER)
-    
-    access_keys_response = conn.get_all_access_keys(IAM_USER)
-    access_keys = access_keys_response['list_access_keys_response']['list_access_keys_result']['access_key_metadata']
-    
-    for access_key in access_keys:
-        conn.delete_access_key(access_key['access_key_id'], user_name=IAM_USER)
+    try:
+        conn.remove_user_from_group(IAM_GROUP, IAM_USER)
         
-    conn.delete_user(IAM_USER)
-    conn.delete_group_policy(IAM_GROUP, 'LowPrivsPolicy')
-    conn.delete_group(IAM_GROUP)
+        access_keys_response = conn.get_all_access_keys(IAM_USER)
+        access_keys = access_keys_response['list_access_keys_response']['list_access_keys_result']['access_key_metadata']
+        
+        for access_key in access_keys:
+            conn.delete_access_key(access_key['access_key_id'], user_name=IAM_USER)
+            
+        conn.delete_user(IAM_USER)
+        conn.delete_group_policy(IAM_GROUP, 'LowPrivsPolicy')
+        conn.delete_group(IAM_GROUP)
+    except:
+        logging.debug('IAM user component missing. Not removed.')
