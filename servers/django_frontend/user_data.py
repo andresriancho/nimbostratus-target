@@ -36,8 +36,10 @@ server {
 
 UWSGI_CONFIG = '''\
 [uwsgi]
+plugins = python
+pythonpath = /var/www/
 
-chdir           = /var/www/vulnweb/
+chdir           = /var/www/
 module          = vulnweb.wsgi
 
 # process-related settings
@@ -45,7 +47,7 @@ module          = vulnweb.wsgi
 master          = true
 processes       = 10
 socket          = /tmp/vulnweb.sock
-chmod-socket    = 664
+chmod-socket    = 777
 vacuum          = true
 daemonize = /var/log/vulnweb.log
 '''
@@ -58,7 +60,7 @@ __VULNWEB_DEPLOY_PUBLIC_KEY__'''
 
 # Package stuff
 APT_INSTALL = 'apt-get install -y -q %s'
-PACKAGES = ['git', 'python-pip', 'nginx']
+PACKAGES = ['git', 'python-pip', 'nginx', 'joe', 'uwsgi-core', 'uwsgi-plugin-python']
 
 
 def configure_logging():
@@ -167,7 +169,7 @@ def configure_uwsgi():
     config.write(UWSGI_CONFIG)
     config.close()
     
-    run_cmd('sudo uwsgi --ini /tmp/uwsgi.ini')
+    run_cmd('uwsgi --ini /tmp/uwsgi.ini')
 
 def clone_repository():
     logging.info('Cloning repository')

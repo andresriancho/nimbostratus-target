@@ -34,16 +34,16 @@ def deploy_django_frontend():
         logging.debug('Waiting for instance to start...')
         time.sleep(10)
 
-    logging.info('Checking if instance was correctly configured')
+    logging.info('Checking if instance was correctly configured (this usually takes 5min)')
     
     conn.create_tags([instance.id], {"Name": NAME})
     
-    for _ in xrange(20):
+    for _ in xrange(30):
         try:
             response = requests.get(TEST_URL % instance.public_dns_name)
         except:
             logging.debug('Instance did not boot yet.')
-            time.sleep(30)
+            time.sleep(45)
         else:
             assert 'requests' in response.text, 'Incorrectly configured!'
     else:
