@@ -9,12 +9,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite',
-    }
-}
+from databases import DATABASES
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
@@ -154,14 +149,7 @@ LOGGING = {
     }
 }
 
-BROKER_TRANSPORT = 'sqs'
-BOTO_PROVIDER = 'boto-provider'
-BROKER_URL = '%s://%s:%s@' % (BROKER_TRANSPORT, BOTO_PROVIDER, None),
-CELERY_IGNORE_RESULT = True,
-BROKER_TRANSPORT_OPTIONS = {
-                            'queue_name_prefix': 'nimbostratus-',
-                            'region': 'ap-southeast-1',
-}
+from broker import *
 
 import djcelery
 djcelery.setup_loader()
