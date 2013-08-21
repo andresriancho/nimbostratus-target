@@ -14,5 +14,10 @@ def teardown_celery_backend():
     conn = EC2Connection()
     conn.delete_key_pair(NAME)
 
-    logging.debug('Removing security group "%s"' % NAME)
-    conn.delete_security_group(SG_NAME)
+    try:
+        conn.get_all_security_groups(groupnames=[SG_NAME,])
+    except:
+        logging.debug('No security group "%s" to delete' % NAME)
+    else:
+        logging.debug('Removing security group "%s"' % NAME)
+        conn.delete_security_group(SG_NAME)
