@@ -12,6 +12,7 @@ Installation
 ============
 
 ```bash
+sudo apt-get install python-mysqldb
 git clone git@github.com:andresriancho/nimbostratus-target.git
 cd nimbostratus-target
 pip install -r requirements.txt
