@@ -1,7 +1,7 @@
 import time
 import logging
 
-from fabric.api import settings, sudo, cd, env
+from fabric.api import settings, sudo, cd, env, task
 from fabric.contrib.files import upload_template
 
 from core.region_connection import EC2Connection
@@ -25,7 +25,8 @@ You can connect to it via SSH:
 env.forward_agent = True
 
 
-def deploy_celery_backend(rds_inst, user_key, user_secret):
+@task
+def deploy_celery_backend(rds_host, user_key, user_secret):
     '''
     We deploy this celery backend host with the following settings:
         * Has the vulnweb application from django_frontend for running a
@@ -34,13 +35,17 @@ def deploy_celery_backend(rds_inst, user_key, user_secret):
         * Has hard-coded AWS credentials to access SQS
         * The credentials have RDS:* , IAM:*, SQS:*
     
-    :param rds_inst: The RDS instance which we'll use to extract the DB endpoint
+    :param rds_host: The RDS instance which we'll use to extract the DB endpoint
     :param user_key: The Amazon API key to hard-code during deployment
     :param user_secret: The Amazon API secret to hard-code during deployment
     '''
     conn = EC2Connection()
 
     logging.info('Launching Celery backend instance')
+    
+    logging.debug('RDS host: %s' % rds_host)
+    logging.debug('Low privilege user access key: %s' % user_key)
+    logging.debug('Low privilege user secret key: %s' % user_secret)
     
     keypair_name = create_keypair(NAME)
     security_group = create_security_group()
@@ -65,9 +70,9 @@ def deploy_celery_backend(rds_inst, user_key, user_secret):
     
     with settings(host_string=host_string, key_filename=key_filename,
                   host=instance.public_dns_name):
-        setup_celery_backend(rds_inst, user_key, user_secret)
+        setup_celery_backend(rds_host, user_key, user_secret)
 
-def setup_celery_backend(rds_inst, user_key, user_secret):
+def setup_celery_backend(rds_host, user_key, user_secret):
     '''
     The real configuration happens here.
     '''
@@ -96,7 +101,7 @@ def setup_celery_backend(rds_inst, user_key, user_secret):
                     '%s/vulnweb/databases.py' % vulnweb_root,
                     context={'user': LOW_PRIV_USER,
                              'password': LOW_PRIV_PASSWORD,
-                             'host': rds_inst.endpoint[0]},
+                             'host': rds_host},
                     backup=False)
 
     upload_template('servers/celery_backend/supervisor.config',
