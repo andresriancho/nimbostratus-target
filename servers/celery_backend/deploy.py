@@ -56,6 +56,7 @@ def deploy_celery_backend(rds_host, user_key, user_secret):
         logging.debug('Waiting for instance to start...')
         time.sleep(10)
 
+    conn.create_tags([instance.id], {"Name": NAME})
     wait_ssh_ready(instance.public_dns_name)
     
     logging.info('Successfully started %s' % NAME)
