@@ -17,7 +17,7 @@ def spawn_rds():
     logging.info('Spawning a new RDS instance, this takes at least 10min!')
     conn = RDSConnection()
     
-    db = conn.create_dbinstance(DB_NAME, 1, 'db.m1.small', 'root', 'hunter2')
+    db = conn.create_dbinstance(DB_NAME, 5, 'db.m1.small', 'root', 'hunter2')
     
     # Allow access from the celery worker security group
     ec2_conn = EC2Connection()
@@ -31,7 +31,12 @@ def teardown_rds():
     logging.warn('Removing RDS instance')
     conn = RDSConnection()
     
-    db_inst = conn.get_all_dbinstances(instance_id=DB_NAME)[0]
+    try:
+        db_inst = conn.get_all_dbinstances(instance_id=DB_NAME)[0]
+    except:
+        logging.debug('There was no RDS instance with name %s' % DB_NAME)
+        return
+    
     conn.delete_dbinstance(db_inst.id, skip_final_snapshot=True)
 
     while True:
