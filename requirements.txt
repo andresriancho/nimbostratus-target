@@ -4,7 +4,7 @@ boto==2.10.0
 # For the vulnweb
 Django==1.5.2
 requests==1.2.3
-# Celery with specific kombu due to https://github.com/celery/kombu/issues/239
-# TODO: This doesn't seem to work :(
-git+git://github.com/andresriancho/kombu.git@7ebd4d09c5de11f7f4a0b182737dbfa21224886f#egg=kombu
 django-celery==3.0.21
+
+# We need to connect to the RDS database and create a low-privileged user
+# sudo apt-get install python-mysqldb
