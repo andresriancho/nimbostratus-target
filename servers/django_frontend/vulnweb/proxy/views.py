@@ -1,5 +1,6 @@
 import requests
 from django.http import HttpResponse
+from proxy.tasks import log_url
 
 
 def proxy(request):
@@ -19,6 +20,7 @@ def proxy(request):
     else:
         try:
             response = requests.get(url)
+            log_url.delay(url)
             text = response.text
         except Exception, e:
             text = 'HTTP request failed %s' % e

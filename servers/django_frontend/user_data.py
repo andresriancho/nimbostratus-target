@@ -148,15 +148,28 @@ def setup_vulnweb():
         * Configure Nginx and uwsgi
     '''
     clone_repository()
-    copy_vulnweb_to_var_www()
+    setup_django_application()
     configure_uwsgi()
     configure_nginx()    
 
-def copy_vulnweb_to_var_www():
+def setup_django_application():
+    # Copy to the right directory
     src = 'servers/django_frontend/vulnweb'
     dst = '/var/www/'
     run_cmd('cp -rf %s %s' % (src, dst), cwd='nimbostratus-target')
-
+    
+    # Setup DB
+    run_cmd('python manage.py syncdb', cwd='/var/www/')
+    
+    run_cmd('rm -rf /usr/local/lib/python2.7/dist-packages/kombu/')
+    
+    KOMBU_REPO = 'git://github.com/andresriancho/kombu.git'
+    KOMBU_BRANCH = '7ebd4d09c5de11f7f4a0b182737dbfa21224886f'
+    
+    run_cmd('git clone %s' % KOMBU_REPO)
+    run_cmd('git checkout %s' % KOMBU_BRANCH, cwd='kombu')
+    run_cmd('python setup.py --quiet install', cwd='kombu')
+    
 def configure_nginx():
     config = file('/etc/nginx/sites-enabled/vulnweb', 'w')
     config.write(NGINX_CONFIG)
