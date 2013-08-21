@@ -5,14 +5,26 @@ import time
 import logging
 
 from core.region_connection import EC2Connection
-
 from config import AMI, SIZE, DEPLOY_PRIVATE_PATH, DEPLOY_PUBLIC_PATH
 from aws.keypair import create_keypair
+from aws.ec2 import create_instance_profile
 
 TEST_URL = 'http://%s/?url=http://httpbin.org/user-agent'
 NAME = 'django_frontend_nimbostratus'
 SG_NAME = '%s_sg' % NAME
-
+SQS_POLICY = """{
+  "Statement":[{
+    "Effect":"Allow",
+    "Action":["sqs:*"],
+    "Resource": "*"}]}
+"""
+SUCCESS_MESSAGE = '''\
+You can connect to it via SSH and HTTP:
+    http://%s/
+    http://%s/?url=http://httpbin.org/user-agent
+    
+    ssh -i django_frontend_nimbostratus.pem ubuntu@%s
+'''
 
 def deploy_django_frontend():
     conn = EC2Connection()
@@ -22,12 +34,14 @@ def deploy_django_frontend():
     keypair_name = create_keypair(NAME)
     user_data = get_user_data()
     security_group = create_security_group()
+    instance_profile = create_instance_profile(NAME, SQS_POLICY)
     
     my_reservation = conn.run_instances(AMI,
                                         instance_type=SIZE,
                                         key_name=keypair_name,
                                         user_data=user_data,
-                                        security_groups=[security_group,])
+                                        security_groups=[security_group,],
+                                        instance_profile_name=instance_profile)
  
     instance = my_reservation.instances[0]
     while not instance.update() == 'running':
@@ -38,16 +52,24 @@ def deploy_django_frontend():
     
     conn.create_tags([instance.id], {"Name": NAME})
     
-    for _ in xrange(30):
+    for _ in xrange(10):
+        
+        time.sleep(60)
+        
         try:
             response = requests.get(TEST_URL % instance.public_dns_name)
-        except:
-            logging.debug('Instance did not boot yet.')
-            time.sleep(45)
+        except Exception:
+            logging.debug('Instance did not boot yet...')
         else:
-            assert 'requests' in response.text, 'Incorrectly configured!'
+            assert 'python-requests' in response.text, 'Incorrectly configured!'
+            break
     else:
         raise Exception('Timeout! Instance failed to boot.')
+    
+    logging.info('Successfully started %s' % NAME)
+    logging.debug(SUCCESS_MESSAGE % (instance.public_dns_name,
+                                     instance.public_dns_name,
+                                     instance.public_dns_name))
 
 def create_security_group(): 
     conn = EC2Connection()
@@ -83,4 +105,5 @@ def verify_config():
                          ' SSH deploy keys and set the path to those files'
                          ' in the config.py file. See: https://help.github.com/articles/managing-deploy-keys')
         sys.exit(1)
-        
+
+
