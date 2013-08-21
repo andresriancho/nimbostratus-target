@@ -18,7 +18,9 @@ def create_keypair(key_name):
         
         # AWS will store the public key but the private key is
         # generated and returned and needs to be stored locally.
-        os.unlink('%s.pem' % key_name)
+        key_file = '%s.pem' % key_name
+        if os.path.exists(key_file):
+            os.unlink(key_file)
         key.save('.')
         
         for _ in xrange(20):
