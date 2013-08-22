@@ -105,14 +105,14 @@ def setup_celery_backend(rds_host, user_key, user_secret):
                     '%s/vulnweb/broker.py' % vulnweb_root,
                     context={'access': user_key,
                              'secret': user_secret},
-                    backup=False)
+                    backup=False, use_sudo=True)
 
     upload_template('servers/celery_backend/databases.config',
                     '%s/vulnweb/databases.py' % vulnweb_root,
                     context={'user': LOW_PRIV_USER,
                              'password': LOW_PRIV_PASSWORD,
                              'host': rds_host},
-                    backup=False)
+                    backup=False, use_sudo=True)
 
     upload_template('servers/celery_backend/supervisor.config',
                     '/etc/supervisor/conf.d/celery.conf',
@@ -122,7 +122,7 @@ def setup_celery_backend(rds_host, user_key, user_secret):
     sudo('supervisorctl update')
     
     with cd(vulnweb_root):
-        sudo('python manage.py syncdb')
+        sudo('python manage.py syncdb --noinput')
 
 def create_security_group(): 
     conn = EC2Connection()

@@ -15,7 +15,7 @@ from core.log_handler import configure_logging
 def deploy():
     configure_logging()
     verify_config()
-    #deploy_django_frontend()
+    deploy_django_frontend()
     
     rds_inst = spawn_rds()
     user_key, user_secret = spawn_iam_user()
