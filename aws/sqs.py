@@ -6,7 +6,6 @@ def teardown_sqs():
     for queue in conn.get_all_queues(prefix='nimbostratus'):
         
         # Empty the queue in order to remove it
-        for message in queue.get_messages():
-            queue.delete_message(message)
+        queue.clear()
         
         conn.delete_queue(queue)

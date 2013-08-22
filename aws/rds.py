@@ -1,5 +1,6 @@
 import time
 import logging
+import socket
 
 import MySQLdb as mdb
 
@@ -61,6 +62,14 @@ def spawn_rds():
     logging.debug(SUCCESS_MESSAGE % (db.endpoint[0], db.endpoint[1],
                                      DB_USER, DB_PASSWORD, db.endpoint[0],
                                      LOW_PRIV_USER, LOW_PRIV_PASSWORD, db.endpoint[0]))
+    
+    # Wait for the DNS entry to be there...
+    while True:
+        try:
+            socket.gethostbyname(db.endpoint[0])
+            break
+        except:
+            time.sleep(1)
     
     setup_db(db)
     
