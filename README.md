@@ -48,6 +48,8 @@ At the end you should end up with the following AWS components:
  * RDS database
  * IAM user for backend worker
 
+A successfull run should look like [this](https://github.com/andresriancho/nimbostratus-target/wiki/Successfull-run).
+
 Killing the environment
 -----------------------
 
