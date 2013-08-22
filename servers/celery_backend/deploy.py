@@ -1,7 +1,7 @@
 import time
 import logging
 
-from fabric.api import settings, sudo, cd, task
+from fabric.api import settings, sudo, cd, task, hide
 from fabric.contrib.files import upload_template, put
 
 from core.region_connection import EC2Connection
@@ -65,14 +65,16 @@ def deploy_celery_backend(rds_host, user_key, user_secret):
     host_string = 'ubuntu@%s' % instance.public_dns_name
     key_filename = '%s.pem' % NAME
     
-    with settings(host_string=host_string, key_filename=key_filename,
-                  host=instance.public_dns_name):
-        setup_celery_backend(rds_host, user_key, user_secret)
+    with hide('stdout', 'stderr'):
+        with settings(host_string=host_string, key_filename=key_filename,
+                      host=instance.public_dns_name):
+            setup_celery_backend(rds_host, user_key, user_secret)
 
 def setup_celery_backend(rds_host, user_key, user_secret):
     '''
     The real configuration happens here.
     '''
+    logging.info('Updating Ubuntu\'s repository index')
     sudo('apt-get update')
     
     # Not sure why, but sometimes I get "E: Unable to locate package git"
@@ -80,9 +82,12 @@ def setup_celery_backend(rds_host, user_key, user_secret):
     time.sleep(2)
     sudo('apt-get update')
     
+    logging.info('Installing ubuntu packages')
     for pkg in ['git', 'python-pip', 'joe', 'python-mysqldb', 'supervisor']:
         sudo('apt-get install -y -q %s' % pkg)
     
+    
+    logging.info('Getting celery application source code')
     with cd('/tmp/'):
         sudo('ssh-keyscan -H github.com > /root/.ssh/known_hosts')
         
@@ -93,13 +98,15 @@ def setup_celery_backend(rds_host, user_key, user_secret):
         sudo('chmod 600 /root/.ssh/id_rsa.pub')
         
         sudo('git clone %s' % VULNWEB_REPO)
-        
+    
+    logging.info('Installing requirements.txt (this takes time!)')
     with cd('/tmp/nimbostratus-target/'):
         sudo('git checkout %s' % VULNWEB_BRANCH)
         sudo('pip install --use-mirrors --upgrade -r requirements.txt')
 
     vulnweb_root = '/tmp/nimbostratus-target/servers/django_frontend/vulnweb'
 
+    logging.info('Configuring django-celery application')
     # Overwrite the application configuration files
     upload_template('servers/celery_backend/broker.config',
                     '%s/vulnweb/broker.py' % vulnweb_root,
