@@ -1,4 +1,7 @@
+import logging
+
 from core.region_connection import SQSConnection
+
 
 def teardown_sqs():
     conn = SQSConnection()
@@ -8,4 +11,5 @@ def teardown_sqs():
         # Empty the queue in order to remove it
         queue.clear()
         
+        logging.warn('Removing SQS queue %s' % queue.name)
         conn.delete_queue(queue)
