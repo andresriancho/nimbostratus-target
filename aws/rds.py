@@ -64,6 +64,7 @@ def spawn_rds():
                                      LOW_PRIV_USER, LOW_PRIV_PASSWORD, db.endpoint[0]))
     
     # Wait for the DNS entry to be there...
+    time.sleep(5)
     while True:
         try:
             socket.gethostbyname(db.endpoint[0])
