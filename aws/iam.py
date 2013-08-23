@@ -7,12 +7,6 @@ GROUP_PRIVILEGES = '''\
 {
   "Statement": [
     {
-      "Sid": "Stmt1377108914887",
-      "Action": "rds:*",
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
       "Sid": "Stmt1377108934836",
       "Action": "iam:*",
       "Effect": "Allow",
