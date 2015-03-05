@@ -14,7 +14,7 @@ from datetime import timedelta
 LOG_FILE = '/var/log/cloud-user-data.log'
 
 # Where to get the code from
-VULNWEB_REPO = 'git@github.com:andresriancho/nimbostratus-target.git'
+VULNWEB_REPO = 'https://github.com/andresriancho/nimbostratus-target.git'
 VULNWEB_BRANCH = 'master'
 
 NGINX_CONFIG = '''\
