@@ -159,7 +159,7 @@ def setup_django_application():
     run_cmd('cp -rf %s %s' % (src, dst), cwd='nimbostratus-target')
     
     # Setup DB
-    run_cmd('python manage.py syncdb', cwd='/var/www/')
+    run_cmd('python manage.py syncdb --noinput', cwd='/var/www/')
     
     run_cmd('rm -rf /usr/local/lib/python2.7/dist-packages/kombu/')
     
